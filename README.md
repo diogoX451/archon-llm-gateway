@@ -24,7 +24,7 @@ Battle patterns extracted from the **Archon** agent platform.
 ## Install
 
 ```bash
-go get github.com/diogoX451/archon-llm-gateway@v0.2.0
+go get github.com/diogoX451/archon-llm-gateway@v0.3.0
 ```
 
 ## Quick start
@@ -48,6 +48,13 @@ reg.Register(llmgateway.NewOpenAICompatAdapter(llmgateway.OpenAICompatConfig{
     BaseURL: "https://integrate.api.nvidia.com/v1",
     APIKey: os.Getenv("NVIDIA_API_KEY"),
 }))
+reg.Register(llmgateway.NewAnthropicAdapter(llmgateway.AnthropicConfig{
+    APIKey: os.Getenv("ANTHROPIC_API_KEY"),
+}))
+reg.Register(llmgateway.NewGeminiAdapter(llmgateway.GeminiConfig{
+    APIKey: os.Getenv("GEMINI_API_KEY"),
+    JSONMode: true, // optional: force application/json for planner tools
+}))
 
 used, resp, err := reg.Generate(ctx, "openai", llmgateway.Request{
     Model: "gpt-4o-mini",
@@ -58,13 +65,22 @@ used, resp, err := reg.Generate(ctx, "openai", llmgateway.Request{
 })
 ```
 
+## Built-in providers
+
+| Name | Adapter | Endpoint |
+|------|---------|----------|
+| `openai` | `NewOpenAIAdapter` | Responses API `/v1/responses` |
+| `ollama` | `NewOllamaAdapter` | `/api/chat` |
+| `openai-compat` / custom | `NewOpenAICompatAdapter` | Chat Completions (NVIDIA, vLLM, …) |
+| `anthropic` | `NewAnthropicAdapter` | Messages `/v1/messages` |
+| `gemini` | `NewGeminiAdapter` | `generateContent` |
+
 ## What to contribute (high value)
 
-1. **Anthropic / Gemini adapters** with the same Request/Response shape  
-2. **Retry-After** parsing from 429 headers into cascade backoff  
-3. **Streaming** GenerateStream (SSE) without breaking non-stream API  
-4. **Benchmarks** vs raw SDKs (allocs, latency overhead)  
-5. **httptest integration tests** with recorded fixtures  
+1. **Retry-After** parsing from 429 headers into cascade backoff  
+2. **Streaming** `GenerateStream` (SSE) without breaking non-stream API  
+3. **Benchmarks** vs raw SDKs (allocs, latency overhead)  
+4. Recorded multi-turn fixtures for Anthropic prompt caching  
 
 See [CONTRIBUTING.md](CONTRIBUTING.md).
 
